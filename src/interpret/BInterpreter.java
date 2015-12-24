@@ -55,7 +55,6 @@ public class BInterpreter {
      * Execute (interpret) the program).
      */
     public void execute() {
-        int pcHigh = -1; //Saves the highest pc reached in the interpretation.
         for (int i = 0; i < program.length(); i++) {
             BToken tok = tokMap.get(program.charAt(i));
             switch (tok) {
@@ -65,42 +64,30 @@ public class BInterpreter {
                 case DECVAL: buf.dec(ptr); break;
                 case OUTPUT: System.out.printf("%c", buf.get(ptr)); break;
                 case INPUT: buf.set(ptr, scanner.nextByte()); break;
-                case LOOPSTART: {
-                    //We've been here before, so this case is not necessary.
-                    if (i <= pcHigh)
-                        break;
-
-                    //Advance pointer to the matching ].
-                    int bf = 1;
-                    while (bf > 0) {
-                        i++;
-                        if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
-                            bf++;
-                        else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
-                            bf--;
-                    }
-                    i--;
-
-                } break;
-                case LOOPEND: {
-                    //Loop is finished.
-                    if (buf.get(ptr) == 0)
-                        break;
-
-                    //Using balance factor (similar to parentheses balance), decrement pointer back to matching [.
-                    int balanceFactor = -1;
-                    while (balanceFactor < 0) {
-                        i--;
-                        if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
-                            balanceFactor++;
-                        else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
-                            balanceFactor--;
-                    }
-                } break;
+                case LOOPSTART: i = loopMatch(i, 1) - 1; break;
+                case LOOPEND: i = (buf.get(ptr) == 0) ? i : loopMatch(i, -1); break;
                 default: throw new RuntimeException("malformed program"); //Note since we strip this won't happen ever
             }
-            pcHigh = Math.max(pcHigh, i);
         }
+    }
+
+    /**
+     * Advance the program pointer from a [ to a ] or vice versa. Note that each [ counts as +1 and each ] counts as -1,
+     * thus to advance the pointer to a ] bf should initially be +1 and for the other case it should be -1.
+     * @param i the initial program pointer
+     * @param bf the initial balance factor of the loops, e.g. [ is +1 and ] is -1
+     * @return the pointer to the corresponding loop token
+     */
+    private int loopMatch(int i, int bf) {
+        int delta = bf;
+        while (bf != 0) {
+            i += delta;
+            if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
+                bf++;
+            else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
+                bf--;
+        }
+        return i;
     }
 
     /**
