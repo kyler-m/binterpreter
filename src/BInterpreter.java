@@ -52,6 +52,7 @@ public class BInterpreter {
      * Execute (interpret) the program).
      */
     public void execute() {
+        int pcHigh = -1; //Saves the highest pc reached in the interpretation.
         for (int i = 0; i < program.length(); i++) {
             BToken tok = tokMap.get(program.charAt(i));
             switch (tok) {
@@ -61,18 +62,29 @@ public class BInterpreter {
                 case DECVAL: buf.dec(ptr); break;
                 case OUTPUT: System.out.printf("%c", buf.get(ptr)); break;
                 case INPUT: buf.set(ptr, scanner.nextByte()); break;
-                case LOOPSTART: break;
+                case LOOPSTART: {
+                    //We've been here before, so this case is not necessary.
+                    if (i <= pcHigh)
+                        break;
+
+                    //Advance pointer to the matching ].
+                    int bf = 1;
+                    while (bf > 0) {
+                        i++;
+                        if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
+                            bf++;
+                        else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
+                            bf--;
+                    }
+                    i--;
+
+                } break;
                 case LOOPEND: {
-
-                    /**
-                     * If we reach a LOOPEND, then roll back to the matching LOOPSTART and go from there.
-                     * This is currently problematic because this is essentially a do-while loop instead of a while
-                     * loop. So the logic will likely have to be changed.
-                     */
-
+                    //Loop is finished.
                     if (buf.get(ptr) == 0)
                         break;
 
+                    //Using balance factor (similar to parentheses balance), decrement pointer back to matching [.
                     int balanceFactor = -1;
                     while (balanceFactor < 0) {
                         i--;
@@ -84,6 +96,7 @@ public class BInterpreter {
                 } break;
                 default: throw new RuntimeException("malformed program"); //Note since we strip this won't happen ever
             }
+            pcHigh = Math.max(pcHigh, i);
         }
     }
 
