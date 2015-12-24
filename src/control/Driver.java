@@ -1,5 +1,6 @@
 package control;
 
+import crosscompile.BToCConverter;
 import interpret.BInterpreter;
 
 public class Driver {
@@ -28,6 +29,8 @@ public class Driver {
     public static void main(String args[]) {
         //new interpret.BInterpreter(fact).execute();
         //new interpret.BInterpreter(fib).execute();
-        new BInterpreter("").execute();
+        new BInterpreter(hw3).execute();
+
+        //System.out.println((new BToCConverter().convert(echo)));
     }
 }

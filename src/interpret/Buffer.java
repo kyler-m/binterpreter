@@ -26,8 +26,6 @@ public class Buffer {
      */
     public Buffer(int capacity) {
         buf = new byte[capacity];
-        for (int i = 0; i < buf.length; i++)
-            buf[i] = 0;
     }
 
     /**
@@ -77,8 +75,6 @@ public class Buffer {
         byte newBuf[] = new byte[buf.length * 2];
         for (int i = 0; i < buf.length; i++)
             newBuf[i] = buf[i];
-        for (int i = buf.length; i < newBuf.length; i++)
-            newBuf[i] = 0;
         buf = newBuf;
     }
 }

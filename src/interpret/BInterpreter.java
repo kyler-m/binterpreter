@@ -47,7 +47,7 @@ public class BInterpreter {
         tokMap.put('[', BToken.LOOPSTART);
         tokMap.put(']', BToken.LOOPEND);
         this.program = strip(program);
-        System.out.println(this.program);
+        System.out.println("Interpreting: " + this.program);
         this.scanner = new Scanner(System.in);
     }
 
