@@ -16,11 +16,11 @@ public class BInterpreter {
     /**
      * The data pointer, i.e. where the program is currently pointing to in the data buffer.
      */
-    private int ptr;
+    private int dPtr;
     /**
      * The data buffer for the program space.
      */
-    private Buffer buf;
+    private Buffer data;
     /**
      * Maps characters to their corresponding tokens, e.g. '>' : BToken.INCPTR.
      */
@@ -29,14 +29,24 @@ public class BInterpreter {
      * Scanner to get byte input (for ',').
      */
     private Scanner scanner;
+    /**
+     * The character buffer from standard input.
+     */
+    private Buffer buf;
+    /**
+     * Pointer to the current item on the character buffer.
+     */
+    private int bPtr;
 
     /**
      * Constructor. Initialize the buffer, data pointer and token map and strip out the program of non-token characters.
      * @param program the program to interpret
      */
     public BInterpreter(String program) {
-        this.buf = new Buffer();
-        this.ptr = 0;
+        this.data = new Buffer();
+        this.buf = new Buffer(24);
+        this.dPtr = 0;
+        this.bPtr = -1;
         this.tokMap = new HashMap<>();
         tokMap.put('>', BToken.INCPTR);
         tokMap.put('<', BToken.DECPTR);
@@ -59,17 +69,54 @@ public class BInterpreter {
         for (int i = 0; i < program.length(); i++) {
             BToken tok = tokMap.get(program.charAt(i));
             switch (tok) {
-                case INCPTR: ptr++; break;
-                case DECPTR: ptr--; break;
-                case INCVAL: buf.inc(ptr); break;
-                case DECVAL: buf.dec(ptr); break;
-                case OUTPUT: System.out.printf("%c", buf.get(ptr)); break;
-                case INPUT: buf.set(ptr, scanner.nextByte()); break;
+                case INCPTR: dPtr++; break;
+                case DECPTR: dPtr--; break;
+                case INCVAL: data.inc(dPtr); break;
+                case DECVAL: data.dec(dPtr); break;
+                case OUTPUT: handleOutput(); break;
+                case INPUT: handleInput(); break;
                 case LOOPSTART: i = loopMatch(i, 1) - 1; break;
-                case LOOPEND: i = (buf.get(ptr) == 0) ? i : loopMatch(i, -1); break;
+                case LOOPEND: i = (data.get(dPtr) == 0) ? i : loopMatch(i, -1); break;
                 default: throw new RuntimeException("malformed program"); //Note since we strip this won't happen ever
             }
         }
+        scanner.close();
+    }
+
+    /**
+     * Handle the input routine ",". To emulate the implicit buffering in getchar(), use a buffer for multiple
+     * characters entered at the same time so whole lines can be consumed.
+     */
+    private void handleInput() {
+        //If we have stuff in the input buffer, then just consume it
+        if (bPtr != -1) {
+            data.set(dPtr, buf.get(bPtr--));
+            return;
+        }
+        String input = scanner.nextLine();
+        try {
+            //If the input is a literal byte, try to parse that in
+            int intVal = Integer.parseInt(input);
+            if (intVal >= Byte.MIN_VALUE && intVal <= Byte.MAX_VALUE) {
+                data.set(dPtr, (byte)intVal);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            //Otherwise, populate the buffer character-by-character
+            if (input.length() > 0)
+                data.set(dPtr, (byte)input.charAt(0));
+            else
+                data.set(dPtr, (byte)0);
+            for (int k = input.length() - 1; k > 0; k--)
+                buf.set(++bPtr, (byte)input.charAt(k));
+        }
+    }
+
+    /**
+     * Output a single character (represented as a byte in the data buffer).
+     */
+    private void handleOutput() {
+        System.out.printf("%c", data.get(dPtr));
     }
 
     /**
@@ -83,7 +130,6 @@ public class BInterpreter {
         int delta = bf;
         while (bf != 0) {
             i += delta;
-
             if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
                 bf++;
             else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
@@ -107,6 +153,9 @@ public class BInterpreter {
         return builder.toString();
     }
 
+    /**
+     * Preprocess the program. Currently just checks to see if the program has balanced loop tokens.
+     */
     private void preprocess() {
         //Check loop balance
         int bf = 0;

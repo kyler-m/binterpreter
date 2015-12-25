@@ -12,6 +12,14 @@ public class Driver {
     static String hw3 = ">++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->\n" +
             "+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.";
     //echo routine
+
+    //get input
+    //while *ptr nonzero
+    //{
+    //output value at ptr
+    //while *ptr nonzero
+    //take it to zero
+    //get input and go back to while loop
     static String echo = ",[.[-],]";
     //infinite fibonacci
     static String fib = ">++++++++++>+>+[\n" +
@@ -29,7 +37,7 @@ public class Driver {
     public static void main(String args[]) {
         //new interpret.BInterpreter(fact).execute();
         //new interpret.BInterpreter(fib).execute();
-        new BInterpreter(fact).execute();
+        new BInterpreter(echo).execute();
 
         //System.out.println((new BToCConverter().convert(echo)));
     }
