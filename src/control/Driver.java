@@ -37,7 +37,10 @@ public class Driver {
     public static void main(String args[]) {
         //new interpret.BInterpreter(fact).execute();
         //new interpret.BInterpreter(fib).execute();
-        new BInterpreter(echo).execute();
+        BInterpreter b = new BInterpreter("+++[->+++++++++++<]>>>>>++++<<<>+++[->+++[->++++++++++<]<]>>[-<<<<.+>>>>]");
+        //b.printData();
+        b.execute();
+        //b.printData();
 
         //System.out.println((new BToCConverter().convert(echo)));
     }

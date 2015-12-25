@@ -7,7 +7,7 @@ public class Buffer {
     /**
      * The default capacity for the buffer.
      */
-    public static final int DEFAULT_CAPACITY = 1024;
+    public static final int DEFAULT_CAPACITY = 8;
     /**
      * The primitive buffer backing.
      */
@@ -76,5 +76,11 @@ public class Buffer {
         for (int i = 0; i < buf.length; i++)
             newBuf[i] = buf[i];
         buf = newBuf;
+    }
+
+    public void printBuffer() {
+        for (int i = 0; i < buf.length; i++)
+            System.out.print(i + "=" + buf[i] + " ");
+        System.out.println();
     }
 }

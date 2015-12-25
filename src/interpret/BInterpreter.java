@@ -1,6 +1,7 @@
 package interpret;
 
 import java.util.HashMap;
+import java.util.IllegalFormatCodePointException;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -116,7 +117,11 @@ public class BInterpreter {
      * Output a single character (represented as a byte in the data buffer).
      */
     private void handleOutput() {
-        System.out.printf("%c", data.get(dPtr));
+        try {
+            System.out.printf("%c", data.get(dPtr));
+        } catch (IllegalFormatCodePointException e) {
+
+        }
     }
 
     /**
@@ -170,6 +175,11 @@ public class BInterpreter {
         }
         if (bf != 0)
             throw new RuntimeException("program has unbalanced loop tokens");
+    }
+
+    public void printData() {
+        System.out.print("Dptr=" + dPtr + " ");
+        data.printBuffer();
     }
 
     /**
