@@ -55,6 +55,7 @@ public class BInterpreter {
      * Execute (interpret) the program).
      */
     public void execute() {
+        preprocess();
         for (int i = 0; i < program.length(); i++) {
             BToken tok = tokMap.get(program.charAt(i));
             switch (tok) {
@@ -82,6 +83,7 @@ public class BInterpreter {
         int delta = bf;
         while (bf != 0) {
             i += delta;
+
             if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
                 bf++;
             else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
@@ -103,6 +105,22 @@ public class BInterpreter {
             if (tokMap.get(toStrip.charAt(i)) != null)
                 builder.append(toStrip.charAt(i));
         return builder.toString();
+    }
+
+    private void preprocess() {
+        //Check loop balance
+        int bf = 0;
+        for (int i = 0; i < program.length(); i++) {
+            char ch = program.charAt(i);
+            if (tokMap.get(ch) == BToken.LOOPSTART)
+                bf++;
+            if (tokMap.get(ch) == BToken.LOOPEND)
+                bf--;
+            if (bf < 0)
+                throw new RuntimeException("] without matching [");
+        }
+        if (bf != 0)
+            throw new RuntimeException("program has unbalanced loop tokens");
     }
 
     /**

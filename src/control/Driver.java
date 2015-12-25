@@ -29,7 +29,7 @@ public class Driver {
     public static void main(String args[]) {
         //new interpret.BInterpreter(fact).execute();
         //new interpret.BInterpreter(fib).execute();
-        new BInterpreter(hw3).execute();
+        new BInterpreter(fact).execute();
 
         //System.out.println((new BToCConverter().convert(echo)));
     }

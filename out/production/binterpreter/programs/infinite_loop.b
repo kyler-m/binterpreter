@@ -1,2 +1,0 @@
-An infinite loop.
-+[]
