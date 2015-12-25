@@ -1,40 +1,31 @@
 package crosscompile;
 
-/**
- * Created by mejia_000 on 12/24/2015.
- */
 public class BToCConverter {
     public BToCConverter() {
-
     }
 
     public String convert(String bprog) {
         StringBuilder cprog = new StringBuilder();
 
-        //necessary imports
         cprog.append("#include <stdio.h>\n");
-
-        //start off with global variables
-        cprog.append("static char buf[1024] = {0};");
-        cprog.append("static char *ptr = buf;");
+        cprog.append("static char p[1024] = {0};");
 
         //fire up the main
         cprog.append("int main(){");
 
         for (int i = 0; i < bprog.length(); i++) {
             switch (bprog.charAt(i)) {
-                case '>': cprog.append("ptr++;"); break;
-                case '<': cprog.append("ptr--;"); break;
-                case '+': cprog.append("(*ptr)++;"); break;
-                case '-': cprog.append("(*ptr)--;"); break;
-                case '.': cprog.append("putchar(*ptr);"); break;
-                case ',': cprog.append("*ptr = getchar();"); break;
-                case '[': cprog.append("while(*ptr){"); break;
+                case '>': cprog.append("p++;"); break;
+                case '<': cprog.append("p--;"); break;
+                case '+': cprog.append("(*p)++;"); break;
+                case '-': cprog.append("(*p)--;"); break;
+                case '.': cprog.append("putchar(*p);"); break;
+                case ',': cprog.append("*p = getchar();"); break;
+                case '[': cprog.append("while(*p){"); break;
                 case ']': cprog.append("}"); break;
             }
         }
 
-        //all done!
         cprog.append("return 0;}");
         return cprog.toString();
     }
