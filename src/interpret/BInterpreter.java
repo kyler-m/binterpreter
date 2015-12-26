@@ -94,14 +94,12 @@ public class BInterpreter {
             data.set(dPtr, buf.get(bPtr--));
             return;
         }
-        String input = scanner.nextLine();
+        String input = scanner.nextLine() + "\n";
         try {
             //If the input is a literal byte, try to parse that in
             int intVal = Integer.parseInt(input);
-            if (intVal >= Byte.MIN_VALUE && intVal <= Byte.MAX_VALUE) {
+            if (intVal >= Byte.MIN_VALUE && intVal <= Byte.MAX_VALUE)
                 data.set(dPtr, (byte)intVal);
-                return;
-            }
         } catch (NumberFormatException e) {
             //Otherwise, populate the buffer character-by-character
             if (input.length() > 0)

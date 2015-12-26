@@ -37,10 +37,12 @@ public class Driver {
     public static void main(String args[]) {
         //new interpret.BInterpreter(fact).execute();
         //new interpret.BInterpreter(fib).execute();
-        BInterpreter b = new BInterpreter("+++[->+++++++++++<]>>>>>++++<<<>+++[->+++[->++++++++++<]<]>>[-<<<<.+>>>>]");
-        //b.printData();
+        BInterpreter b = new BInterpreter("+[,.]");
+        b.printData();
         b.execute();
-        //b.printData();
+        b.printData();
+
+        //72 = 2*2*2*3*3
 
         //System.out.println((new BToCConverter().convert(echo)));
     }
