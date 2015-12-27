@@ -34,6 +34,8 @@ public class Buffer {
      * @return the value at the index
      */
     public byte get(int i) {
+        if (i >= buf.length)
+            expandCapacity();
         return buf[i];
     }
 
