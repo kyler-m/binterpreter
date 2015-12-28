@@ -1,8 +1,6 @@
 package interpret;
 
-import java.util.HashMap;
 import java.util.IllegalFormatCodePointException;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -23,10 +21,6 @@ public class BInterpreter {
      */
     private Buffer data;
     /**
-     * Maps characters to their corresponding tokens, e.g. '>' : BToken.INCPTR.
-     */
-    private Map<Character, BToken> tokMap;
-    /**
      * Scanner to get byte input (for ',').
      */
     private Scanner scanner;
@@ -45,20 +39,10 @@ public class BInterpreter {
      */
     public BInterpreter(String program) {
         this.data = new Buffer();
-        this.buf = new Buffer(24);
+        this.buf = new Buffer();
         this.dPtr = 0;
         this.bPtr = -1;
-        this.tokMap = new HashMap<>();
-        tokMap.put('>', BToken.INCPTR);
-        tokMap.put('<', BToken.DECPTR);
-        tokMap.put('+', BToken.INCVAL);
-        tokMap.put('-', BToken.DECVAL);
-        tokMap.put('.', BToken.OUTPUT);
-        tokMap.put(',', BToken.INPUT);
-        tokMap.put('[', BToken.LOOPSTART);
-        tokMap.put(']', BToken.LOOPEND);
         this.program = strip(program);
-        System.out.println("Interpreting: " + this.program);
         this.scanner = new Scanner(System.in);
     }
 
@@ -66,12 +50,13 @@ public class BInterpreter {
      * Execute (interpret) the program).
      */
     public void execute() {
+        System.out.println("Interpreting: " + this.program);
         preprocess();
         for (int i = 0; i < program.length(); i++) {
-            BToken tok = tokMap.get(program.charAt(i));
+            BToken tok = BToken.getToken(program.charAt(i));
             switch (tok) {
                 case INCPTR: dPtr++; break;
-                case DECPTR: dPtr--; break;
+                case DECPTR: if (--dPtr < 0) throw new RuntimeException("program moved off tape"); break;
                 case INCVAL: data.inc(dPtr); break;
                 case DECVAL: data.dec(dPtr); break;
                 case OUTPUT: handleOutput(); break;
@@ -89,26 +74,14 @@ public class BInterpreter {
      * characters entered at the same time so whole lines can be consumed.
      */
     private void handleInput() {
-        //If we have stuff in the input buffer, then just consume it
-        if (bPtr != -1) {
-            data.set(dPtr, buf.get(bPtr--));
-            return;
-        }
-        String input = scanner.nextLine() + "\n";
-        try {
-            //If the input is a literal byte, try to parse that in
-            int intVal = Integer.parseInt(input);
-            if (intVal >= Byte.MIN_VALUE && intVal <= Byte.MAX_VALUE)
-                data.set(dPtr, (byte)intVal);
-        } catch (NumberFormatException e) {
-            //Otherwise, populate the buffer character-by-character
-            if (input.length() > 0)
-                data.set(dPtr, (byte)input.charAt(0));
-            else
-                data.set(dPtr, (byte)0);
-            for (int k = input.length() - 1; k > 0; k--)
+        if (bPtr == -1) {
+            String input = scanner.nextLine() + "\n";
+            if (input.length() == 0)
+                input = "0";
+            for (int k = input.length() - 1; k >= 0; k--)
                 buf.set(++bPtr, (byte)input.charAt(k));
         }
+        data.set(dPtr, buf.get(bPtr--));
     }
 
     /**
@@ -118,7 +91,7 @@ public class BInterpreter {
         try {
             System.out.printf("%c", data.get(dPtr));
         } catch (IllegalFormatCodePointException e) {
-
+            //TODO
         }
     }
 
@@ -133,9 +106,10 @@ public class BInterpreter {
         int delta = bf;
         while (bf != 0) {
             i += delta;
-            if (tokMap.get(program.charAt(i)) == BToken.LOOPSTART)
+            char ch = program.charAt(i);
+            if (BToken.getToken(ch) == BToken.LOOPSTART)
                 bf++;
-            else if (tokMap.get(program.charAt(i)) == BToken.LOOPEND)
+            else if (BToken.getToken(ch) == BToken.LOOPEND)
                 bf--;
         }
         return i;
@@ -151,7 +125,7 @@ public class BInterpreter {
     private String strip(String toStrip) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < toStrip.length(); i++)
-            if (tokMap.get(toStrip.charAt(i)) != null)
+            if (BToken.getToken(toStrip.charAt(i)) != null)
                 builder.append(toStrip.charAt(i));
         return builder.toString();
     }
@@ -164,9 +138,9 @@ public class BInterpreter {
         int bf = 0;
         for (int i = 0; i < program.length(); i++) {
             char ch = program.charAt(i);
-            if (tokMap.get(ch) == BToken.LOOPSTART)
+            if (BToken.getToken(ch) == BToken.LOOPSTART)
                 bf++;
-            if (tokMap.get(ch) == BToken.LOOPEND)
+            else if (BToken.getToken(ch) == BToken.LOOPEND)
                 bf--;
             if (bf < 0)
                 throw new RuntimeException("] without matching [");
@@ -185,5 +159,19 @@ public class BInterpreter {
      */
     enum BToken {
         INCPTR, DECPTR, INCVAL, DECVAL, OUTPUT, INPUT, LOOPSTART, LOOPEND;
+
+        public static BToken getToken(char ch) {
+            switch(ch) {
+                case '>': return INCPTR;
+                case '<': return DECPTR;
+                case '+': return INCVAL;
+                case '-': return DECVAL;
+                case '.': return OUTPUT;
+                case ',': return INPUT;
+                case '[': return LOOPSTART;
+                case ']': return LOOPEND;
+                default: return null;
+            }
+        }
     }
 }
