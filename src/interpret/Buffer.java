@@ -7,7 +7,7 @@ public class Buffer {
     /**
      * The default capacity for the buffer.
      */
-    public static final int DEFAULT_CAPACITY = 8;
+    public static final int DEFAULT_CAPACITY = 16;
     /**
      * The primitive buffer backing.
      */
